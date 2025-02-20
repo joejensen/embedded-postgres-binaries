@@ -17,7 +17,7 @@ jobs:
           distribution: 'zulu'
           java-version: 15
       - name: Test PostgreSQL bundle
-        if: ${{ !(startsWith(matrix.postgres, '10.') || startsWith(matrix.postgres, '9.')) }}
+        if: ${{ !startsWith(matrix.postgres, '10.') }}
         run: ./gradlew :debian-platforms:testAmd64DebianJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }}
         timeout-minutes: 10
       - name: Test PostgreSQL bundle (repacked)
@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lin-artifacts
-          path: bundle/*
+          path: debian-platforms/build/libs
           retention-days: 1
   windows:
     name: PostgreSQL ${{ matrix.postgres }} (Windows)
@@ -62,5 +62,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: win-artifacts
-          path: bundle/*
+          path: repacked-platforms/build/libs
           retention-days: 1
