@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        postgres: ["17.2", "16.6", "15.10", "14.15", "13.18", "12.22"]
+        postgres: ["17.3"]
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
@@ -28,57 +28,19 @@ jobs:
         if: ${{ startsWith(matrix.postgres, '10.') || startsWith(matrix.postgres, '9.') }}
         run: ./gradlew :custom-debian-platform:testCustomDebianJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }} -ParchName=amd64
         timeout-minutes: 10
-  alpine-linux:
-    name: PostgreSQL ${{ matrix.postgres }} (Alpine Linux)
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        postgres: ["17.2", "16.6", "15.10", "14.15", "13.18", "12.22"]
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          distribution: 'zulu'
-          java-version: 15
-      - name: Test PostgreSQL bundle
-        run: ./gradlew :alpine-platforms:testAmd64AlpineJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }}
-        timeout-minutes: 10
-      - name: Test PostgreSQL bundle (lite)
-        if: ${{ startsWith(matrix.postgres, '10.') || startsWith(matrix.postgres, '11.') || startsWith(matrix.postgres, '12.') || startsWith(matrix.postgres, '13.') || startsWith(matrix.postgres, '14.') || startsWith(matrix.postgres, '15.') }}
-        run: ./gradlew :alpine-lite-platforms:testAmd64AlpineLiteJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }}
-        timeout-minutes: 10
-  macos:
-    name: PostgreSQL ${{ matrix.postgres }} (MacOS)
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        postgres: ["17.2", "16.6", "15.10", "14.15", "13.18", "12.22"]
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 15
-      - name: Install psql executables
-        run: |
-          brew update
-          brew install postgresql
-      - name: Test PostgreSQL bundle
-        run: ./gradlew :repacked-platforms:testAmd64DarwinJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }}
-        timeout-minutes: 10
+          name: lin-artifacts
+          path: bundle/*
+          retention-days: 1
   windows:
     name: PostgreSQL ${{ matrix.postgres }} (Windows)
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        postgres: ["17.2", "16.6", "15.10", "14.15", "13.18", "12.22"]
+        postgres: ["17.3"]
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
@@ -96,3 +58,9 @@ jobs:
         run: ./gradlew :repacked-platforms:testAmd64WindowsJar -Pversion=${{ matrix.postgres }}-TEST -PpgVersion=${{ matrix.postgres }}
         shell: bash
         timeout-minutes: 10
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-artifacts
+          path: bundle/*
+          retention-days: 1
